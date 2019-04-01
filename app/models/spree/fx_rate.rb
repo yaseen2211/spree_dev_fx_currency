@@ -23,10 +23,10 @@ module Spree
     end
 
     def self.sync_currencies_from_config
-      found_currencies = supported_currencies.map do |c|
-        find_or_create_by(from_currency: spree_currency, to_currency: c.upcase).id
+      found_currencies = Spree::FxRate.supported_currencies.map do |c|
+        Spree::FxRate.find_or_create_by(from_currency: Spree::FxRate.spree_currency, to_currency: c.upcase).id
       end
-      where.not(id: found_currencies).destroy_all
+      #where.not(id: found_currencies).destroy_all
     end
 
     def self.create_supported_currencies
@@ -66,12 +66,17 @@ module Spree
 
     def update_prices_for_variant(variant)
       from_price = variant.price_in(from_currency.upcase)
-
       return if from_price.new_record?
 
-      new_price = variant.price_in(to_currency.upcase)
+      new_price = variant.price_in(to_currency.split(',').first.upcase)
       new_price.amount = from_price.amount * rate
       new_price.save if new_price.changed?
+    end
+
+    def update_sale_price(sale_price)
+      return unless to_currency.split(',').first.upcase == sale_price.currency.upcase
+      sale_price.value = sale_price.value * rate
+      sale_price.save if sale_price.changed?
     end
   end
 end
