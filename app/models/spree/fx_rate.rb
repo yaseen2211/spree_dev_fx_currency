@@ -55,7 +55,13 @@ module Spree
     def update_products_prices
       Spree::Product.transaction do
         Spree::Product.all.each { |p| update_prices_for_product(p) }
+
+        Spree::SalePrice.transaction do
+          Spree::SalePrice.all.each { |p| update_sale_price(p) }
+        end
       end
+
+
     end
 
     def update_prices_for_product(product)
@@ -70,13 +76,14 @@ module Spree
 
       new_price = variant.price_in(to_currency.split(',').first.upcase)
       new_price.amount = from_price.amount * rate
-      new_price.save if new_price.changed?
+      new_price.save! if new_price.changed?
     end
 
     def update_sale_price(sale_price)
       return unless to_currency.split(',').first.upcase == sale_price.currency.upcase
-      sale_price.value = sale_price.value * rate
-      sale_price.save if sale_price.changed?
+      base_value = sale_price.price.variant.prices.where(currency:"AED").last.active_sale.value
+      sale_price.value = base_value * rate
+      sale_price.save! if sale_price.changed?
     end
   end
 end
