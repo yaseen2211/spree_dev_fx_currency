@@ -7,7 +7,7 @@ require 'spree_fx_currency/version'
 
 Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
-  s.name        = 'spree_fx_currency'
+  s.name        = 'spree_dev_fx_currency'
   s.version     = SpreeFxCurrency.version
   s.summary     = 'Spree currency converter'
   s.description = 'Use foreign exchange rates (relative to main currency) '\
